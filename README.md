@@ -10,13 +10,28 @@ A machine learning workflow for training and serving Iris flower classifiers usi
 
 ![architecture](architecture.png)
 
+## Project Structure
+
+- `app`: FastAPI application (serving inference requests)
+  - `app.py`: FastAPI
+  - `Dockerfile`: Packages FastAPI app into a container and starts it with Uvicorn
+  - `requirements.txt`: Python dependencies for app.py execution
+- `mlflow/Dockerfile`: MLflow server (model artifacts logging)
+- `train`: Model training
+  - `train.py`: Model training script
+  - `Dockerfile`: Runs a training job (through train.py)
+  - `requirements.txt`: Python dependencies for train.py execution
+- `docker-compose.yml`: Service definitions
+- `mlruns/`: MLflow artifacts and runs (auto-generated)
+- `mlflow.db`: SQLite backend store (auto-generated)
+
 ## Setup
 
-### Prerequisites
+### 1. Prerequisites
 
 - Docker and Docker Compose
 
-### Start the Stack
+### 2. Start the Stack
 
 ```bash
 docker compose up -d
@@ -24,7 +39,7 @@ docker compose up -d
 
 This starts MLflow and the FastAPI server. MLflow is available at `http://localhost:5001` and the API at `http://localhost:8000`.
 
-### Train a Model
+### Train a Model (optionally)
 
 ```bash
 docker compose run --rm train
@@ -32,7 +47,7 @@ docker compose run --rm train
 
 This trains a new Random Forest model on the Iris dataset and registers it as `iris_model` in MLflow.
 
-### Make a Prediction
+### 3. Make a Prediction
 
 ```bash
 curl -X POST http://localhost:8000/predict \
@@ -51,7 +66,7 @@ Response:
 {"prediction": 0}
 ```
 
-### Check Health
+### 4. Check Health
 
 ```bash
 curl http://localhost:8000/health
@@ -63,7 +78,7 @@ Response:
 {"status": "ok", "model_loaded": true}
 ```
 
-## Stop the Stack
+## 5. Stop the Stack
 
 ```bash
 docker compose down
@@ -82,15 +97,6 @@ Stop it with:
 ```bash
 docker compose -p my-project-name down
 ```
-
-## Project Structure
-
-- `docker-compose.yml`: Service definitions
-- `train/train.py`: Model training script
-- `app/app.py`: FastAPI application
-- `app/requirements.txt`: Python dependencies
-- `mlruns/`: MLflow artifacts and runs (auto-generated)
-- `mlflow.db`: SQLite backend store (auto-generated)
 
 ## Improvements
 
