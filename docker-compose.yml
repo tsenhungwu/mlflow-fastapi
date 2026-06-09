@@ -13,16 +13,16 @@ services:
       --host 0.0.0.0
       --allowed-hosts *
 
-  # train:
-  #   build: .
-  #   command: python train.py
-  #   environment:
-  #     - MLFLOW_TRACKING_URI=http://mlflow:5000
-  #   depends_on:
-  #     mlflow:
-  #       condition: service_started
-  #   volumes:
-  #     - ./mlruns:/mlruns
+  train:
+    build: .
+    command: python train.py
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      mlflow:
+        condition: service_started
+    volumes:
+      - ./mlruns:/mlruns
 
   serving:
     build: ./app
@@ -34,8 +34,8 @@ services:
     depends_on:
       mlflow:
         condition: service_started
-      # train:
-      #   condition: service_completed_successfully
+      train:
+        condition: service_completed_successfully
     volumes:
       - ./mlruns:/mlruns
 

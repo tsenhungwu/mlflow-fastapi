@@ -15,20 +15,11 @@ async def load_model_async():
     global model
     await asyncio.sleep(3)
     try:
-        # Load directly from the artifact directory
-        model_path = "/mlruns/0/models/m-34e25784d278404c9d4e51525a6c4a94/artifacts"
-        # Try to find the latest model
-        import glob
-        model_paths = sorted(glob.glob("/mlruns/0/models/*/artifacts"), reverse=True)
-        if model_paths:
-            model_path = model_paths[0]
-            model = mlflow.pyfunc.load_model(model_path)
-            print(f"Model loaded from {model_path}")
-        else:
-            print("No model artifacts found")
+        model_uri = os.getenv("MODEL_URI", "models:/iris_model/latest")
+        model = mlflow.pyfunc.load_model(model_uri)
+        print(f"Model loaded from model URI: {model_uri}")
     except Exception as e:
-        print(f"Failed to load model: {e}")
-        model = None
+        raise Exception(f"Failed to load model: {e}")
 
 @app.on_event("startup")
 async def startup_event():
