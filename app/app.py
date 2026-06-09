@@ -1,12 +1,14 @@
-import os
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
 import mlflow.pyfunc
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001"))
+mlflow.set_tracking_uri(
+    os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
+)
 
 model = None
 
@@ -30,29 +32,32 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
 class IrisRequest(BaseModel):
     sepal_length: float
     sepal_width: float
     petal_length: float
     petal_width: float
 
+
 @app.post("/predict")
 def predict(data: IrisRequest):
     if model is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
-    features = [[
-        data.sepal_length,
-        data.sepal_width,
-        data.petal_length,
-        data.petal_width
-    ]]
+    features = [
+        [
+            data.sepal_length,
+            data.sepal_width,
+            data.petal_length,
+            data.petal_width,
+        ]
+    ]
 
     prediction = model.predict(features)
 
-    return {
-        "prediction": int(prediction[0])
-    }
+    return {"prediction": int(prediction[0])}
+
 
 @app.get("/health")
 def health():
