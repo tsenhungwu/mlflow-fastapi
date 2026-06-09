@@ -8,6 +8,8 @@ A machine learning workflow for training and serving Iris flower classifiers usi
 - **Training Script**: Trains a Random Forest classifier on the Iris dataset and registers it
 - **FastAPI Serving** (port 8000): Loads the latest model and exposes a prediction endpoint
 
+![architecture](architecture.png)
+
 ## Setup
 
 ### Prerequisites
@@ -90,3 +92,7 @@ docker compose -p my-project-name down
 - `mlruns/`: MLflow artifacts and runs (auto-generated)
 - `mlflow.db`: SQLite backend store (auto-generated)
 
+## Improvements
+
+- SQLite + shared volume: `sqlite:///mlflow.db` with a bind-mounted `./mlflow.db` is fine for a local demo. It does not scale to multiple MLflow replicas or heavy concurrent writes. Production should use PostgreSQL (or similar) and S3/GCS for artifacts.
+- No `tests/`. Even a small pytest suite (health endpoint, predict with mocked model, train smoke test) would catch regressions in the Compose flow.
