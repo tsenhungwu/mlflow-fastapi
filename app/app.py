@@ -15,7 +15,6 @@ model = None
 
 async def load_model_async():
     global model
-    await asyncio.sleep(3)
     try:
         model_uri = os.getenv("MODEL_URI", "models:/iris_model/latest")
         model = mlflow.pyfunc.load_model(model_uri)

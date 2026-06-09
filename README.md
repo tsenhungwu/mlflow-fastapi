@@ -84,7 +84,6 @@ docker compose -p my-project-name down
 ## Project Structure
 
 - `docker-compose.yml`: Service definitions
-- `Dockerfile`: Training service image
 - `train/train.py`: Model training script
 - `app/app.py`: FastAPI application
 - `app/requirements.txt`: Python dependencies
