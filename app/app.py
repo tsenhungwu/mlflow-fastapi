@@ -1,15 +1,15 @@
 import os
-import mlflow.pyfunc
+import asyncio
+from contextlib import asynccontextmanager
 
+import mlflow.pyfunc
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import asyncio
-
-app = FastAPI()
 
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001"))
 
 model = None
+
 
 async def load_model_async():
     global model
@@ -21,9 +21,14 @@ async def load_model_async():
     except Exception as e:
         raise Exception(f"Failed to load model: {e}")
 
-@app.on_event("startup")
-async def startup_event():
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await load_model_async()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 class IrisRequest(BaseModel):
     sepal_length: float
