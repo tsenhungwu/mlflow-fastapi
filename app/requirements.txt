@@ -1,0 +1,11 @@
+# API layer
+fastapi==0.115.0
+uvicorn==0.30.0
+
+# ML inference layer
+mlflow==3.12.0
+scikit-learn==1.8.0
+
+# Data handling layer
+pandas==2.3.3
+numpy==2.4.6
