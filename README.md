@@ -11,6 +11,7 @@ A machine learning workflow for training and serving Iris flower classifiers usi
 ## Setup
 
 ### Prerequisites
+
 - Docker and Docker Compose
 
 ### Start the Stack
@@ -43,6 +44,7 @@ curl -X POST http://localhost:8000/predict \
 ```
 
 Response:
+
 ```json
 {"prediction": 0}
 ```
@@ -54,6 +56,7 @@ curl http://localhost:8000/health
 ```
 
 Response:
+
 ```json
 {"status": "ok", "model_loaded": true}
 ```
@@ -82,8 +85,9 @@ docker compose -p my-project-name down
 
 - `docker-compose.yml`: Service definitions
 - `Dockerfile`: Training service image
-- `train.py`: Model training script
+- `train/train.py`: Model training script
 - `app/app.py`: FastAPI application
 - `app/requirements.txt`: Python dependencies
 - `mlruns/`: MLflow artifacts and runs (auto-generated)
 - `mlflow.db`: SQLite backend store (auto-generated)
+
