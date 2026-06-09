@@ -14,8 +14,7 @@ services:
       --allowed-hosts *
 
   train:
-    build: .
-    command: python train.py
+    build: ./train
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
