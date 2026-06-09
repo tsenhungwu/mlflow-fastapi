@@ -1,4 +1,4 @@
-# MLflow FastAPI Demo (PRD)
+# MLflow FastAPI Demo
 
 A machine learning workflow for training and serving Iris flower classifiers using MLflow and FastAPI.
 
