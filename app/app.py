@@ -1,7 +1,7 @@
 import os
 import mlflow.pyfunc
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import asyncio
 
@@ -34,7 +34,7 @@ class IrisRequest(BaseModel):
 @app.post("/predict")
 def predict(data: IrisRequest):
     if model is None:
-        return {"error": "Model not loaded"}
+        raise HTTPException(status_code=503, detail="Model not loaded")
 
     features = [[
         data.sepal_length,
