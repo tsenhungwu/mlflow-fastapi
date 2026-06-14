@@ -1,14 +1,9 @@
-import asyncio
 import os
 from contextlib import asynccontextmanager
 
 import mlflow.pyfunc
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-mlflow.set_tracking_uri(
-    os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
-)
 
 model = None
 
