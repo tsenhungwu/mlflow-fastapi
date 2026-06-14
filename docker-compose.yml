@@ -5,10 +5,10 @@ services:
       - "5001:5000"
     volumes:
       - ./mlruns:/mlruns
-      - ./mlflow.db:/mlflow.db
+      - ./sqldb:/sqldb
     command: >
       mlflow server
-      --backend-store-uri sqlite:///mlflow.db
+      --backend-store-uri sqlite:////sqldb/mlflow.db
       --default-artifact-root /mlruns
       --host 0.0.0.0
       --allowed-hosts localhost:5001,mlflow:5000
