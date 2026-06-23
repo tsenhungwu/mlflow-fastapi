@@ -32,7 +32,7 @@ Then, we orchestrate the entire flow further with Kubernetes (using minikube).
 - **FastAPI Serving** (port 8000): Loads the latest model and exposes a prediction endpoint
 
 
-architecture
+![architecture](architecture.png)
 
 
 ## 2. Setup
