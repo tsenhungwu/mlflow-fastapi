@@ -1,10 +1,10 @@
-# MLflow FastAPI Demo
+# Overview
 
-A machine learning workflow for training and serving Iris flower classifiers using MLflow and FastAPI.
+A containerized end-to-end MLOps pipeline demonstrating model training, experiment tracking, model registry, and online inference serving using MLflow, FastAPI, Docker Compose, and Kubernetes.
 
-We first start off containerization with Docker to test if `docker compose` go through all the image creation processes successfully.
+The project first validates the complete ML workflow locally using Docker Compose, including image building, MLflow tracking, model training, and inference serving.
 
-Then, we orchestrate the entire flow further with Kubernetes (using minikube).
+After the validation, the entire ML workflow is orchestrated with Kubernetes.
 
 # Project Structure
 - `app`: FastAPI application (serving inference requests)
@@ -20,16 +20,16 @@ Then, we orchestrate the entire flow further with Kubernetes (using minikube).
 - `k8s/`: Kubernetes manifests (Kustomize)
 - `scripts/`: Build and deploy helpers
 - `mlruns/`: MLflow artifacts and runs (auto-generated)
-- `mlflow.db`: SQLite backend store (auto-generated)
+- `mlflow.db`: SQLite MLflow backend store (generated at runtime)
 
 # Docker 
 
 ## 1. Architecture
 
-- **MLflow Server** (port 5001): Tracks experiments, logs models, and stores artifacts
-  - Note: port 5001 is chosen because port 5000 is in use.
-- **Training Script**: Trains a Random Forest classifier on the Iris dataset and registers it
-- **FastAPI Serving** (port 8000): Loads the latest model and exposes a prediction endpoint
+- Training container trains a Random Forest model.
+- The trained model is logged to MLflow Model Registry.
+- FastAPI loads the latest registered model version.
+- Prediction requests are served through the REST API.
 
 
 ![architecture](architecture.png)
@@ -49,9 +49,22 @@ docker compose up -d
 
 This starts MLflow and the FastAPI server. MLflow is available at `http://localhost:5001` and the API at `http://localhost:8000`.
 
+```bash
+# Check status
+docker compose ps
+```
+
+```
+NAME                  STATUS
+mlflow                running
+serving               running
+```
+
 ### Train a Model (optionally)
 
 ```bash
+# The training container is executed as a one-off job because training is an offline workflow, 
+# unlike the long-running MLflow and FastAPI services.
 docker compose run --rm train
 ```
 
@@ -117,6 +130,10 @@ docker compose -p my-project-name down
 - A Kubernetes cluster (minikube, kind, or cloud)
 - Optional: [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (built into kubectl 1.14+)
 
+
+## 2. Architecture
+![architecture](k8s-architecture.png)
+
 ## 2. Automatic Deployment (minikube / local cluster)
 
 ```bash
@@ -178,6 +195,8 @@ Jobs are immutable. Delete the existing Job before retraining:
 ```bash
 kubectl -n mlflow-fastapi delete job train
 kubectl apply -f k8s/base/train-job.yaml
+
+# The serving pod must restart because the model is loaded during application startup.
 kubectl -n mlflow-fastapi rollout restart deployment/serving
 ```
 
@@ -189,14 +208,17 @@ REGISTRY=ghcr.io/your-org/ ./scripts/build-images.sh
 
 Then update image names in `k8s/base/kustomization.yaml` to match your registry.
 
-## Kubernetes Notes
+## Current Limitations
 
-- PVCs use `ReadWriteOnce`. On multi-node clusters, MLflow, train, and serving must schedule on the same node, or use shared storage (NFS, EFS, etc.).
-- SQLite backend is suitable for demos only. Production should use PostgreSQL and S3/GCS for artifacts.
-- The serving Deployment waits for the `iris_model` registered model before starting.
+- SQLite backend
+- Local filesystem artifact storage
+- No automated testing
+- No CI/CD pipeline
 
-## Improvements
+## Future Improvements
 
-- SQLite + shared volume: `sqlite:///mlflow.db` with a bind-mounted `./mlflow.db` is fine for a local demo. It does not scale to multiple MLflow replicas or heavy concurrent writes. Production should use PostgreSQL (or similar) and S3/GCS for artifacts.
-- No `tests/`. Even a small pytest suite (health endpoint, predict with mocked model, train smoke test) would catch regressions in the Compose flow.
-
+- PostgreSQL backend store
+- S3/Azure Blob artifact storage
+- GitHub Actions CI/CD
+- Kubernetes Secrets management
+- Horizontal scaling with multiple serving replicas
