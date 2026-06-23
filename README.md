@@ -134,7 +134,7 @@ docker compose -p my-project-name down
 ## 2. Architecture
 ![architecture](k8s-architecture.png)
 
-## 2. Automatic Deployment (minikube / local cluster)
+## 3. Automatic Deployment (minikube / local cluster)
 
 ```bash
 ./scripts/deploy-k8s.sh
@@ -164,7 +164,7 @@ kubectl apply -k k8s/overlays/local
 kubectl apply -k k8s/base             
 ```
 
-## 3. Make a Prediction
+## 4. Make a Prediction
 
 ```bash
 # Required when using minikube with the Docker driver
