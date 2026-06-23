@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: mlflow-fastapi
+  labels:
+    app: mlflow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+        - name: mlflow
+          image: mlflow-fastapi-mlflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              name: http
+          command:
+            - mlflow
+            - server
+            - --backend-store-uri
+            - sqlite:////sqldb/mlflow.db
+            - --default-artifact-root
+            - /mlruns
+            - --host
+            - 0.0.0.0
+            - --port=5000
+            - --allowed-hosts=127.0.0.1:*,localhost:*,mlflow-service:*,mlflow.local
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: mlruns
+              mountPath: /mlruns
+            - name: sqldb
+              mountPath: /sqldb
+      volumes:
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: mlruns
+        - name: sqldb
+          persistentVolumeClaim:
+            claimName: sqldb
+---
+# Note: NodePort is used for testing purposes, uncomment below for testing.
+  # Note: `minikube service mlflow -n mlflow-fastapi` if using Docker Desktop
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mlflow
+#   namespace: mlflow-fastapi
+#   labels:
+#     app: mlflow
+# spec:
+#   # type: ClusterIP
+#   type: NodePort
+#   selector:
+#     app: mlflow
+#   ports:
+#     - name: http
+#       port: 5200 # Service exposes it internally on 5200
+#       targetPort: 5000 # pod listens on 5000 (MLflow server)
+#       nodePort: 30500 # Kubernetes node exposes it externally on 30500
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-service
+  namespace: mlflow-fastapi
+spec:
+  type: ClusterIP # cluster internal access
+  selector:
+    app: mlflow
+  ports:
+    - name: http
+      port: 5200
+      targetPort: 5000 # pod listens on 5000 (MLflow server)
+---
+# Note: Add address mapping in /etc/hosts
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow-ingress
+  namespace: mlflow-fastapi
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mlflow.local # host name for external access
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlflow-service # service name
+                port:
+                  number: 5200 # service port
