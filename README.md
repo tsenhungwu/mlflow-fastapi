@@ -108,19 +108,18 @@ Stop it with:
 docker compose -p my-project-name down
 ```
 
-## Deploy to Kubernetes
+# Deploy to Kubernetes
 
-### Prerequisites
+## 1. Prerequisites
 
 - Docker
 - kubectl
 - A Kubernetes cluster (minikube, kind, or cloud)
 - Optional: [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (built into kubectl 1.14+)
 
-### Quick Start (minikube / local cluster)
+## 2. Automatic Deployment (minikube / local cluster)
 
 ```bash
-# Build images and deploy with NodePort services
 ./scripts/deploy-k8s.sh
 ```
 
@@ -131,7 +130,7 @@ This script:
 3. Applies manifests from `k8s/overlays/local`
 4. Waits for MLflow, the training Job, and the serving Deployment
 
-### Manual Deploy
+### Manual Deployment (for testing/debugging each step individually)
 
 ```bash
 # 1. Build images
@@ -148,7 +147,7 @@ kubectl apply -k k8s/overlays/local
 kubectl apply -k k8s/base             
 ```
 
-### Make a Prediction (Kubernetes)
+## 3. Make a Prediction
 
 ```bash
 # If running minikube on top of Docker Desktop, this is the way to expose the service
@@ -167,7 +166,7 @@ curl -X POST "http://serving.myiris.com/predict" \
   }'
 ```
 
-### Retrain the Model
+### Retrain the Model (optionally)
 
 Jobs are immutable. Delete the existing Job before retraining:
 
@@ -177,7 +176,7 @@ kubectl apply -f k8s/base/train-job.yaml
 kubectl -n mlflow-fastapi rollout restart deployment/serving
 ```
 
-### Push to a Container Registry
+### Push to a Container Registry (optionally)
 
 ```bash
 REGISTRY=ghcr.io/your-org/ ./scripts/build-images.sh
@@ -185,7 +184,7 @@ REGISTRY=ghcr.io/your-org/ ./scripts/build-images.sh
 
 Then update image names in `k8s/base/kustomization.yaml` to match your registry.
 
-### Kubernetes Notes
+## Kubernetes Notes
 
 - PVCs use `ReadWriteOnce`. On multi-node clusters, MLflow, train, and serving must schedule on the same node, or use shared storage (NFS, EFS, etc.).
 - SQLite backend is suitable for demos only. Production should use PostgreSQL and S3/GCS for artifacts.
