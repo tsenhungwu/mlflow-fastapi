@@ -1,7 +1,10 @@
-import mlflow
 import mlflow.sklearn
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
+
+import mlflow
+
+print("Training in progress...")
 
 X, y = load_iris(return_X_y=True)
 
