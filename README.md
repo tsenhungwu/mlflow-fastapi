@@ -150,9 +150,14 @@ kubectl apply -k k8s/base
 ## 3. Make a Prediction
 
 ```bash
-# If running minikube on top of Docker Desktop, this is the way to expose the service
-expose minikube service serving-svc -n mlflow-fastapi
+# Required when using minikube with the Docker driver
+minikube tunnel
 ```
+
+`minikube tunnel` does the following jobs:
+- Creates network routes from the host into the minikube network.
+- Maintains those routes while the process is running.
+- Makes Kubernetes services and ingress endpoints reachable from the host.
 
 ```bash
 # Request a prediction
