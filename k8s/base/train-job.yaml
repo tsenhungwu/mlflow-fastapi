@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train
+  namespace: mlflow-fastapi
+  labels:
+    app: train
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: train
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: train
+          image: mlflow-fastapi-train:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow-service:5200 # maps to service name and service port
+          volumeMounts:
+            - name: mlruns
+              mountPath: /mlruns
+      volumes:
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: mlruns

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serving
+  namespace: mlflow-fastapi
+  labels:
+    app: serving
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: serving
+  template:
+    metadata:
+      labels:
+        app: serving
+    spec:
+      containers:
+        - name: serving
+          image: mlflow-fastapi-serving:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: MODEL_URI
+              value: models:/iris_model/latest
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow-service:5200 # maps to service name and service port
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: mlruns
+              mountPath: /mlruns
+      volumes:
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: mlruns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serving-svc
+  namespace: mlflow-fastapi
+  labels:
+    app: serving
+spec:
+  type: ClusterIP
+  selector:
+    app: serving
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: serving-ingress
+  namespace: mlflow-fastapi
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: serving.myiris.com # host name for external access
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: serving-svc # service name
+                port:
+                  number: 8001 # service port
