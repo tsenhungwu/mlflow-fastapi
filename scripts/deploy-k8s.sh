@@ -20,9 +20,9 @@ echo "Building container images..."
 
 if command -v minikube >/dev/null 2>&1 && minikube status >/dev/null 2>&1; then
   echo "Loading images into minikube..."
-  minikube image load mlflow-fastapi-mlflow:latest
-  minikube image load mlflow-fastapi-train:latest
-  minikube image load mlflow-fastapi-serving:latest
+  minikube image load mlflow-platform/mlflow:v1.0.0
+  minikube image load mlflow-platform/train:v1.0.0
+  minikube image load mlflow-platform/serving:v1.0.0
 fi
 
 echo "Creating namespace..."
