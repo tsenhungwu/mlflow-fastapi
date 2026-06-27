@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: mlflow
-          image: mlflow-fastapi-mlflow:latest
+          image: mlflow-platform/mlflow:v1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
