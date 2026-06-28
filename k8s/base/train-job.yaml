@@ -15,7 +15,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: train
-          image: mlflow-platform/train:v1.0.0
+          image: mlflow-platform/train
           imagePullPolicy: IfNotPresent
           env:
             - name: MLFLOW_TRACKING_URI
