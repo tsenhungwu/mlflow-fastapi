@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: serving
-          image: mlflow-platform/serving:v1.0.0
+          image: mlflow-platform/serving
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -27,6 +27,13 @@ spec:
               value: models:/iris_model/latest
             - name: MLFLOW_TRACKING_URI
               value: http://mlflow-service:5200 # maps to service name and service port
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           readinessProbe:
             httpGet:
               path: /health
