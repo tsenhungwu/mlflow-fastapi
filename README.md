@@ -32,7 +32,7 @@ After the validation, the entire ML workflow is orchestrated with Kubernetes.
 - FastAPI loads the latest registered model version.
 - Prediction requests are served through the REST API.
 
-architecture
+![architecture](architecture.png)
 
 ## 2. Setup
 
@@ -131,7 +131,7 @@ docker compose -p my-project-name down
 
 ## 2. Architecture
 
-architecture
+![architecture](k8s-architecture.png)
 
 ## 3. Automatic Deployment (minikube / local cluster)
 
