@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: mlflow
-          image: mlflow-fastapi-mlflow:latest
+          image: mlflow-platform/mlflow
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -27,12 +27,24 @@ spec:
             - server
             - --backend-store-uri
             - sqlite:////sqldb/mlflow.db
-            - --default-artifact-root
-            - /mlruns
+            - --default-artifact-root=s3://mlflow/
             - --host
             - 0.0.0.0
             - --port=5000
             - --allowed-hosts=127.0.0.1:*,localhost:*,mlflow-service:*,mlflow.local
+          env:
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: http://minio-svc:9000
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: AWS_SECRET_ACCESS_KEY
           readinessProbe:
             httpGet:
               path: /health
@@ -46,20 +58,15 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
           volumeMounts:
-            - name: mlruns
-              mountPath: /mlruns
             - name: sqldb
               mountPath: /sqldb
       volumes:
-        - name: mlruns
-          persistentVolumeClaim:
-            claimName: mlruns
         - name: sqldb
           persistentVolumeClaim:
             claimName: sqldb
 ---
 # Note: NodePort is used for testing purposes, uncomment below for testing.
-  # Note: `minikube service mlflow -n mlflow-fastapi` if using Docker Desktop
+# Note: `minikube service mlflow -n mlflow-fastapi` if using Docker Desktop
 # apiVersion: v1
 # kind: Service
 # metadata:

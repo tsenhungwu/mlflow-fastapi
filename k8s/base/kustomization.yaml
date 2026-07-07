@@ -6,17 +6,13 @@ namespace: mlflow-fastapi
 resources:
   - namespace.yaml
   - pvc.yaml
+  - minio.yaml
+  - minio-init.yaml
   - mlflow.yaml
   - train-job.yaml
   - serving.yaml
 
-images:
-  - name: mlflow-fastapi-mlflow
-    newName: mlflow-fastapi-mlflow
-    newTag: latest
-  - name: mlflow-fastapi-train
-    newName: mlflow-fastapi-train
-    newTag: latest
-  - name: mlflow-fastapi-serving
-    newName: mlflow-fastapi-serving
-    newTag: latest
+secretGenerator:
+  - name: mlops-secret
+    envs:
+      - .env

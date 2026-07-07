@@ -3,3 +3,14 @@ kind: Kustomization
 
 resources:
   - ../../base
+
+images:
+  - name: mlflow-platform/mlflow
+    newName: mlflow-platform/mlflow
+    newTag: v1.0.0
+  - name: mlflow-platform/train
+    newName: mlflow-platform/train
+    newTag: v1.0.0
+  - name: mlflow-platform/serving
+    newName: mlflow-platform/serving
+    newTag: v1.0.0

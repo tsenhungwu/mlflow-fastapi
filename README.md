@@ -7,6 +7,7 @@ The project first validates the complete ML workflow locally using Docker Compos
 After the validation, the entire ML workflow is orchestrated with Kubernetes.
 
 # Project Structure
+
 - `app`: FastAPI application (serving inference requests)
   - `app.py`: FastAPI
   - `Dockerfile`: Packages FastAPI app into a container and starts it with Uvicorn
@@ -22,7 +23,7 @@ After the validation, the entire ML workflow is orchestrated with Kubernetes.
 - `mlruns/`: MLflow artifacts and runs (auto-generated)
 - `mlflow.db`: SQLite MLflow backend store (generated at runtime)
 
-# Docker 
+# Docker
 
 ## 1. Architecture
 
@@ -31,9 +32,7 @@ After the validation, the entire ML workflow is orchestrated with Kubernetes.
 - FastAPI loads the latest registered model version.
 - Prediction requests are served through the REST API.
 
-
 ![architecture](architecture.png)
-
 
 ## 2. Setup
 
@@ -130,14 +129,15 @@ docker compose -p my-project-name down
 - A Kubernetes cluster (minikube, kind, or cloud)
 - Optional: [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (built into kubectl 1.14+)
 
-
 ## 2. Architecture
+
 ![architecture](k8s-architecture.png)
 
 ## 3. Automatic Deployment (minikube / local cluster)
 
 ```bash
-./scripts/deploy-k8s.sh
+# follows this pattern ./scripts/deploy-k8s.sh ${overlay} ${version}
+./scripts/deploy-k8s.sh local v1.0.0
 ```
 
 This script:
@@ -172,6 +172,7 @@ minikube tunnel
 ```
 
 `minikube tunnel` does the following jobs:
+
 - Creates network routes from the host into the minikube network.
 - Maintains those routes while the process is running.
 - Makes Kubernetes services and ingress endpoints reachable from the host.
@@ -222,3 +223,4 @@ Then update image names in `k8s/base/kustomization.yaml` to match your registry.
 - GitHub Actions CI/CD
 - Kubernetes Secrets management
 - Horizontal scaling with multiple serving replicas
+

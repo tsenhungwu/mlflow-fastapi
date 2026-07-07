@@ -15,15 +15,20 @@ spec:
       restartPolicy: Never
       containers:
         - name: train
-          image: mlflow-fastapi-train:latest
+          image: mlflow-platform/train
           imagePullPolicy: IfNotPresent
           env:
             - name: MLFLOW_TRACKING_URI
               value: http://mlflow-service:5200 # maps to service name and service port
-          volumeMounts:
-            - name: mlruns
-              mountPath: /mlruns
-      volumes:
-        - name: mlruns
-          persistentVolumeClaim:
-            claimName: mlruns
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: http://minio-svc:9000
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: AWS_SECRET_ACCESS_KEY
