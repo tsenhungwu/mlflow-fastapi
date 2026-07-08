@@ -136,7 +136,6 @@ docker compose -p my-project-name down
 ## 3. Automatic Deployment (minikube / local cluster)
 
 ```bash
-# follows this pattern ./scripts/deploy-k8s.sh ${overlay} ${version}
 make all
 ```
 
