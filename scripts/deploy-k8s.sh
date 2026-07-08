@@ -6,7 +6,7 @@ OVERLAY="${1:-base}"
 
 NAMESPACE="mlflow-fastapi"
 IMAGE_PREFIX="mlflow-platform"
-VERSION="${2:-v1.0.0}"
+VERSION=${IMAGE_VERSION:?IMAGE_VERSION is required}
 
 IMAGES=(
   "mlflow"
@@ -26,6 +26,7 @@ else
 fi
 
 echo "Building container images..."
+IMAGE_VERSION="${VERSION}" \
 "${ROOT_DIR}/scripts/build-images.sh"
 
 if command -v minikube >/dev/null 2>&1 && minikube status >/dev/null 2>&1; then
@@ -41,6 +42,14 @@ kubectl apply -f "${ROOT_DIR}/k8s/base/namespace.yaml"
 
 echo "Removing previous train job (if any)..."
 kubectl delete job train -n "${NAMESPACE}" --ignore-not-found
+
+echo "Updating image versions..."
+pushd "${KUSTOMIZE_PATH}" >/dev/null
+for image in "${IMAGES[@]}"; do
+  kustomize edit set image \
+    "${IMAGE_PREFIX}/${image}=${IMAGE_PREFIX}/${image}:${VERSION}"
+done
+popd >/dev/null
 
 echo "Applying Kubernetes manifests (overlay: ${OVERLAY})..."
 kubectl apply -k "${KUSTOMIZE_PATH}"
