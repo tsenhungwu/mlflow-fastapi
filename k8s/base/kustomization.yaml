@@ -4,15 +4,25 @@ kind: Kustomization
 namespace: mlflow-fastapi
 
 resources:
-  - namespace.yaml
-  - pvc.yaml
-  - minio.yaml
-  - minio-init.yaml
-  - mlflow.yaml
-  - train-job.yaml
-  - serving.yaml
+- namespace.yaml
+- pvc.yaml
+- minio.yaml
+- minio-init.yaml
+- mlflow.yaml
+- train-job.yaml
+- serving.yaml
 
 secretGenerator:
-  - name: mlops-secret
-    envs:
-      - .env
+- envs:
+  - .env
+  name: mlops-secret
+images:
+- name: mlflow-platform/mlflow
+  newName: mlflow-platform/mlflow
+  newTag: 1.1.0
+- name: mlflow-platform/serving
+  newName: mlflow-platform/serving
+  newTag: 1.1.0
+- name: mlflow-platform/train
+  newName: mlflow-platform/train
+  newTag: 1.1.0
