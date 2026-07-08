@@ -137,32 +137,22 @@ docker compose -p my-project-name down
 
 ```bash
 # follows this pattern ./scripts/deploy-k8s.sh ${overlay} ${version}
-./scripts/deploy-k8s.sh local v1.0.0
+make all
 ```
 
-This script:
+This performs:
 
 1. Builds three container images (`mlflow`, `train`, `serving`)
 2. Loads them into minikube if minikube is running
 3. Applies manifests from `k8s/overlays/local`
-4. Waits for MLflow, the training Job, and the serving Deployment
-
-### Manual Deployment (for testing/debugging each step individually)
-
-```bash
-# 1. Build images
-./scripts/build-images.sh
-
-# 2. Load into cluster (example: minikube)
-minikube image load mlflow-fastapi-mlflow:latest
-minikube image load mlflow-fastapi-train:latest
-minikube image load mlflow-fastapi-serving:latest
-
-# 3. Apply manifests
-kubectl apply -k k8s/overlays/local
-# or
-kubectl apply -k k8s/base             
-```
+4. Creates following deployments, jobs, etc, in sequence:
+- namespace
+- persistent volume claim
+- minio deployment
+- minio init: creates a mlflow bucket
+- mlflow deployment
+- training job
+- serving deployment
 
 ## 4. Make a Prediction
 

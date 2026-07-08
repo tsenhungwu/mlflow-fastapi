@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REGISTRY="${REGISTRY:-}"
-VERSION="${1:-v1.0.0}"
+VERSION=${IMAGE_VERSION:?IMAGE_VERSION is required}
 
 IMAGE_PREFIX="mlflow-platform"
 

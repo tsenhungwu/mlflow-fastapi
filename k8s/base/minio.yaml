@@ -49,7 +49,7 @@ metadata:
   name: minio-svc
   namespace: mlflow-fastapi
 spec:
-  type: NodePort # local access test through `minikube service minio -n mlflow-fastapi`
+  type: NodePort # local access test through `minikube service minio-svc -n mlflow-fastapi`
   selector:
     app: minio
   ports:
