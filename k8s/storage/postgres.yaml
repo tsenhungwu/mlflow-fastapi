@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: mlflow-fastapi
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: mlflow_db         # for image postgres:11 on minikube
+  POSTGRES_USER: mlflow_user     # for image postgres:11 on minikube
+  POSTGRES_PASSWORD: mlflow_pwd  # for image postgres:11 on minikube
+  PGDATA: /var/lib/postgresql/mlflow/data # for image postgres:11 on minikube
+  POSTGRESQL_DATABASE: mlflow_db            # for image from openshift
+  POSTGRESQL_USER: mlflow_user              # for image from openshift
+  POSTGRESQL_PASSWORD: mlflow_pwd           # for image from openshift
+  PGDATA: /var/lib/postgresql/mlflow/data   # for image from openshift
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: mlflow-fastapi
+  labels:
+    app: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14 #image-registry.openshift-image-registry.svc:5000/openshift/postgresql:latest #postgres:11
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: mysql-pvc
+          mountPath: /var/lib/postgresql/mlflow
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-pvc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: mlflow-fastapi
+  labels:
+    svc: postgres-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgres
