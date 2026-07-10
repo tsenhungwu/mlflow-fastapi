@@ -27,10 +27,11 @@ spec:
             - -c
             - |
               mlflow server \
-              --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql-svc:3306/mlflow \
+              --backend-store-uri postgresql://${MYSQL_USER}:${MYSQL_PASSWORD}@postgres-svc:5432/mlflow_db \
               --default-artifact-root=s3://mlflow/ \
               --host 0.0.0.0 \
-              --port=5000
+              --port=5000 \
+              --allowed-hosts=127.0.0.1:*,localhost:*,mlflow-service:*,mlflow.local 
           env:
             - name: MLFLOW_S3_ENDPOINT_URL
               value: http://minio-svc:9000
