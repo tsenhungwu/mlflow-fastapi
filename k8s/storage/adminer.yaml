@@ -25,7 +25,7 @@ metadata:
   name: adminer-svc
   namespace: mlflow-fastapi
 spec:
-  type: NodePort
+  type: NodePort # local access test through `minikube service adminer-svc -n mlflow-fastapi`
   selector:
     app: adminer
   ports:
