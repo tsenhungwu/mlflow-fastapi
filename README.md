@@ -219,16 +219,9 @@ Then update image names in `k8s/base/kustomization.yaml` to match your registry.
 
 ## Current Limitations
 
-- SQLite backend
-- Local filesystem artifact storage
 - No automated testing
 - No CI/CD pipeline
 
 ## Future Improvements
 
-- PostgreSQL backend store
-- S3/Azure Blob artifact storage
 - GitHub Actions CI/CD
-- Kubernetes Secrets management
-- Horizontal scaling with multiple serving replicas
-
