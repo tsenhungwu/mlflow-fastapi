@@ -13,7 +13,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sqldb
+  name: mysql-pvc
   namespace: mlflow-fastapi
 spec:
   accessModes:
