@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mlflow-fastapi
+
+resources:
+- ../base
+- mlflow.yaml
+- train-job.yaml
+- serving.yaml
+
+images:
+- name: mlflow-platform/mlflow
+  newName: mlflow-platform/mlflow
+  newTag: 1.2.0
+- name: mlflow-platform/serving
+  newName: mlflow-platform/serving
+  newTag: 1.2.0
+- name: mlflow-platform/train
+  newName: mlflow-platform/train
+  newTag: 1.2.0
