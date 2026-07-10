@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: mlflow-fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          ports: 
+            - containerPort: 3306
+              protocol: TCP
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              value: mlflow
+
+          volumeMounts:
+            - name: mysql-pvc
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-pvc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+  namespace: mlflow-fastapi
+  labels:
+    svc: mysql-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 3306
+    targetPort: 3306
+    protocol: TCP
+  selector:
+    app: mysql
