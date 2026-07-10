@@ -37,12 +37,6 @@ if command -v minikube >/dev/null 2>&1 && minikube status >/dev/null 2>&1; then
   done
 fi
 
-echo "Creating namespace..."
-kubectl apply -f "${ROOT_DIR}/k8s/base/namespace.yaml"
-
-echo "Removing previous train job (if any)..."
-kubectl delete job train -n "${NAMESPACE}" --ignore-not-found
-
 echo "Updating image versions..."
 pushd "${KUSTOMIZE_PATH}" >/dev/null
 for image in "${IMAGES[@]}"; do
@@ -52,15 +46,31 @@ done
 popd >/dev/null
 
 echo "Applying Kubernetes manifests (overlay: ${OVERLAY})..."
-kubectl apply -k "${KUSTOMIZE_PATH}"
+echo "Creating namespace and pvc..."
+kubectl apply -k k8s/base
 
-echo ""
-echo "Waiting for workloads..."
-kubectl -n "${NAMESPACE}" rollout status deployment/mlflow --timeout=120s
-kubectl -n "${NAMESPACE}" wait --for=condition=complete job/train --timeout=300s
-kubectl -n "${NAMESPACE}" rollout status deployment/serving --timeout=300s
+echo "Creating MinIO deployment..."
+kubectl apply -f "${ROOT_DIR}/k8s/storage/minio.yaml"
 
-echo ""
+kubectl rollout status deployment/minio \
+  -n "${NAMESPACE}" \
+  --timeout=120s
+
+echo "Creating bucket in MinIO..."
+kubectl apply -f "${ROOT_DIR}/k8s/storage/minio-init.yaml"
+
+echo "Waiting for MySQL..."
+kubectl apply -f "${ROOT_DIR}/k8s/storage/mysql.yaml"
+kubectl -n "${NAMESPACE}" rollout status statefulset/mysql --timeout=120s
+
+echo "Creating Adminer (MySQL GUI) deployment..."
+kubectl apply -f "${ROOT_DIR}/k8s/storage/adminer.yaml"
+
+echo "Removing previous train job (if any)..."
+kubectl delete job train -n "${NAMESPACE}" --ignore-not-found
+
+echo "Deploying MLflow..."
+kubectl apply -k k8s/application
+
 echo "Deployment complete."
-echo ""
-kubectl -n "${NAMESPACE}" get pods,svc
+kubectl -n "${NAMESPACE}" get all
