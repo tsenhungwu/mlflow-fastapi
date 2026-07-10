@@ -6,7 +6,7 @@ metadata:
   labels:
     app: mlflow
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: mlflow
@@ -23,15 +23,14 @@ spec:
             - containerPort: 5000
               name: http
           command:
-            - mlflow
-            - server
-            - --backend-store-uri
-            - sqlite:////sqldb/mlflow.db
-            - --default-artifact-root=s3://mlflow/
-            - --host
-            - 0.0.0.0
-            - --port=5000
-            - --allowed-hosts=127.0.0.1:*,localhost:*,mlflow-service:*,mlflow.local
+            - sh
+            - -c
+            - |
+              mlflow server \
+              --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql-svc:3306/mlflow \
+              --default-artifact-root=s3://mlflow/ \
+              --host 0.0.0.0 \
+              --port=5000
           env:
             - name: MLFLOW_S3_ENDPOINT_URL
               value: http://minio-svc:9000
@@ -45,6 +44,16 @@ spec:
                   secretKeyRef:
                     name: mlops-secret
                     key: AWS_SECRET_ACCESS_KEY
+            - name: MYSQL_USER
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                  secretKeyRef:
+                    name: mlops-secret
+                    key: MYSQL_PASSWORD
           readinessProbe:
             httpGet:
               path: /health
@@ -57,13 +66,6 @@ spec:
               port: 5000
             initialDelaySeconds: 30
             periodSeconds: 10
-          volumeMounts:
-            - name: sqldb
-              mountPath: /sqldb
-      volumes:
-        - name: sqldb
-          persistentVolumeClaim:
-            claimName: sqldb
 ---
 # Note: NodePort is used for testing purposes, uncomment below for testing.
 # Note: `minikube service mlflow -n mlflow-fastapi` if using Docker Desktop
