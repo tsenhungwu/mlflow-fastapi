@@ -59,11 +59,11 @@ kubectl rollout status deployment/minio \
 echo "Creating bucket in MinIO..."
 kubectl apply -f "${ROOT_DIR}/k8s/storage/minio-init.yaml"
 
-echo "Waiting for MySQL..."
-kubectl apply -f "${ROOT_DIR}/k8s/storage/mysql.yaml"
-kubectl -n "${NAMESPACE}" rollout status statefulset/mysql --timeout=120s
+echo "Waiting for Postgres..."
+kubectl apply -f "${ROOT_DIR}/k8s/storage/postgres.yaml"
+kubectl -n "${NAMESPACE}" rollout status statefulset/postgres --timeout=120s
 
-echo "Creating Adminer (MySQL GUI) deployment..."
+echo "Creating Adminer (Database GUI) deployment..."
 kubectl apply -f "${ROOT_DIR}/k8s/storage/adminer.yaml"
 
 echo "Removing previous train job (if any)..."
