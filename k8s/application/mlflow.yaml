@@ -27,7 +27,7 @@ spec:
             - -c
             - |
               mlflow server \
-              --backend-store-uri postgresql://${MYSQL_USER}:${MYSQL_PASSWORD}@postgres-svc:5432/mlflow_db \
+              --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-svc:5432/mlflow_db \
               --default-artifact-root=s3://mlflow/ \
               --host 0.0.0.0 \
               --port=5000 \
@@ -45,16 +45,16 @@ spec:
                   secretKeyRef:
                     name: mlops-secret
                     key: AWS_SECRET_ACCESS_KEY
-            - name: MYSQL_USER
+            - name: POSTGRES_USER
               valueFrom:
                   secretKeyRef:
                     name: mlops-secret
-                    key: MYSQL_USER
-            - name: MYSQL_PASSWORD
+                    key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
               valueFrom:
                   secretKeyRef:
                     name: mlops-secret
-                    key: MYSQL_PASSWORD
+                    key: POSTGRES_PASSWORD
           readinessProbe:
             httpGet:
               path: /health
