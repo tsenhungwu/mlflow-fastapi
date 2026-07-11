@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+  namespace: mlflow-fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+        - name: adminer
+          image: adminer
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adminer-svc
+  namespace: mlflow-fastapi
+spec:
+  type: NodePort # local access test through `minikube service adminer-svc -n mlflow-fastapi`
+  selector:
+    app: adminer
+  ports:
+    - port: 8080
+      targetPort: 8080

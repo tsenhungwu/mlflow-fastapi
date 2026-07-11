@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: mlflow-fastapi
+  labels:
+    app: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14 # image tag must be at least 14 so it's compatible with mlflow==3.14
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        env:
+          - name: POSTGRES_DB
+            valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: POSTGRES_DB
+          - name: POSTGRES_USER
+            valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: POSTGRES_PASSWORD
+          - name: PGDATA
+            valueFrom:
+                secretKeyRef:
+                  name: mlops-secret
+                  key: PGDATA
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: sql-pvc
+          mountPath: /var/lib/postgresql/mlflow
+  volumeClaimTemplates:
+  - metadata:
+      name: sql-pvc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: mlflow-fastapi
+  labels:
+    svc: postgres-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgres

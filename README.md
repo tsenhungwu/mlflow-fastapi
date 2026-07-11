@@ -138,20 +138,39 @@ docker compose -p my-project-name down
 ```bash
 make all
 ```
+Upon triggering deployment through `make all`, we can track the progress through what `scripts/deploy-k8s.sh` provides.
 
-This performs:
+### Step 1 - Image Preparation
+![01_build_images](images/01_build_images.png)
+- Tags all images (in this case: `mlflow`, `train`, `serving` to v1.2.0)
+- Builds all container images (`mlflow`, `train`, `serving`)
 
-1. Builds three container images (`mlflow`, `train`, `serving`)
-2. Loads them into minikube if minikube is running
-3. Applies manifests from `k8s/overlays/local`
-4. Creates following deployments, jobs, etc, in sequence:
-- namespace
-- persistent volume claim
-- minio deployment
-- minio init: creates a mlflow bucket
-- mlflow deployment
-- training job
-- serving deployment
+### Step 2 - Image Loading
+![02_load_images](images/02_load_images.png)
+- Loads images into Kubernetes (e.g., Minikube)
+- Updates images tags to ensure Kubernetes references the same before deployment
+
+### Step 3 - Deployment
+![03_k8s_deployment](images/03_k8s_deployment.png)
+- Creates deployments, jobs, etc, in sequence:
+  - Namespace
+  - PersistentVolumeClaims (one for MinIO and one for PostgreSQL)
+  - Secrets (credentials for MinIO and PostgreSQL)
+  - MinIO Deployment (MLflow artifact store) and its NodePort Service (`minio-svc`)
+    - Wait until the MinIO Deployment is ready (up to 120 seconds)
+  - MinIO initialization Job
+    - Creates an `mlflow` bucket in MinIO
+  - PostgreSQL StatefulSet (MLflow backend store) and its NodePort Service (`postgres-svc`)
+    - Wait until the PostgreSQL StatefulSet rollout completes (up to 120 seconds)
+  - Adminer Deployment and its NodePort Service (`adminer-svc`)
+    - Provides a web GUI for browsing the PostgreSQL database
+  - Remove any existing training Job from a previous run
+  - MLflow Deployment, ClusterIP Service, and Ingress
+  - Training Job
+  - Serving Deployment (serves the trained model for real-time inference)
+
+### Step 4 - Deployment Completion & Inspection
+![04_k8s_deployment_completion](images/04_k8s_deployment_completion.png)
 
 ## 4. Make a Prediction
 
@@ -178,6 +197,12 @@ curl -X POST "http://serving.myiris.com/predict" \
   }'
 ```
 
+## 5. Model Artifact Validation
+![adminer](images/adminer.png)
+![minio](images/minio.png)
+![mlflow](images/mlflow.png)
+
+
 ### Retrain the Model (optionally)
 
 Jobs are immutable. Delete the existing Job before retraining:
@@ -200,16 +225,9 @@ Then update image names in `k8s/base/kustomization.yaml` to match your registry.
 
 ## Current Limitations
 
-- SQLite backend
-- Local filesystem artifact storage
 - No automated testing
 - No CI/CD pipeline
 
 ## Future Improvements
 
-- PostgreSQL backend store
-- S3/Azure Blob artifact storage
 - GitHub Actions CI/CD
-- Kubernetes Secrets management
-- Horizontal scaling with multiple serving replicas
-
