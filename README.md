@@ -197,6 +197,12 @@ curl -X POST "http://serving.myiris.com/predict" \
   }'
 ```
 
+## 5. Model Artifact Validation
+![adminer](images/adminer.png)
+![minio](images/minio.png)
+![mlflow](images/mlflow.png)
+
+
 ### Retrain the Model (optionally)
 
 Jobs are immutable. Delete the existing Job before retraining:
